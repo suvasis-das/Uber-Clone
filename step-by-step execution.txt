@@ -1,0 +1,1533 @@
+Uber Clone — Backend Notes + Code
+
+1. Project structure
+
+Uber-Clone/
+│
+├── app.js
+├── server.js
+├── .env
+└── db/
+    └── db.js
+
+Story
+
+app.js    → prepare/configure the office
+server.js → open/start the office
+db.js     → connect to the records room
+.env      → secret/config locker
+
+2. app.js
+
+Code
+
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+
+app.use(cors());
+
+app.get("/", (req, res) => {
+    res.send("server is running");
+});
+
+module.exports = app;
+
+What each part means
+
+const dotenv = require('dotenv');
+
+Load the dotenv package.
+
+dotenv.config();
+
+Read the .env file.
+
+const express = require('express');
+
+Bring Express into the project.
+
+const app = express();
+
+Create our Express application.
+
+app.use(cors());
+
+Use CORS middleware.
+
+app.get("/", (req, res) => {
+    res.send("server is running");
+});
+
+When a GET request comes to /, send "server is running".
+
+module.exports = app;
+
+Make the app available to another file.
+
+Story
+
+app.js = arrange the office
+
+Express = office management system
+CORS = communication permission/checkpoint
+Route = service counter
+Response = answer to customer
+
+Remember
+
+app.js prepares the application.
+
+3. server.js
+
+Code
+
+const http = require('http');
+const app = require('./app');
+
+const port = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+
+server.listen(port, () => {
+    console.log(`server is running on the port ${port}`);
+});
+
+Important lines
+
+const http = require('http');
+
+Load Node's HTTP module.
+
+const app = require('./app');
+
+Bring the Express application from app.js.
+
+const port = process.env.PORT || 3000;
+
+Use the PORT from .env; otherwise use 3000.
+
+const server = http.createServer(app);
+
+Create an HTTP server and attach the Express app to it.
+
+server.listen(port, () => {
+
+Start the server and listen on the selected port.
+
+Story
+
+app.js
+"Office is prepared."
+
+       ↓
+
+server.js
+"Open Gate 3000."
+
+       ↓
+
+Server starts
+
+Remember
+
+app.js = prepare
+server.js = start
+
+4. Port
+
+Example
+
+const port = process.env.PORT || 3000;
+
+Story
+
+Computer = huge building
+Port 3000 = Gate 3000
+Server = office behind the gate
+
+When we visit:
+
+http://localhost:3000
+
+we are basically saying:
+
+"Go to this computer and enter through Gate 3000."
+
+Remember
+
+Port = network entry point/gate.
+
+5. Request and Response
+
+Code
+
+app.get("/", (req, res) => {
+    res.send("server is running");
+});
+
+req
+
+Request = information coming IN.
+
+res
+
+Response = information going OUT.
+
+Memory
+
+req = IN
+res = OUT
+
+Story
+
+Customer asks something:
+
+Customer → Request
+Office → Response
+
+6. Middleware
+
+Code
+
+app.use(cors());
+
+Meaning
+
+The request passes through middleware before the final route handling.
+
+Request
+   ↓
+Middleware
+   ↓
+Route
+   ↓
+Response
+
+Story
+
+Middleware = checkpoint/security/processing station.
+
+Important:
+
+Middleware is NOT only authentication.
+
+Authentication is just one type of middleware.
+
+7. .env
+
+Example
+
+PORT=3000
+DB_CONNECT=your_mongodb_connection_string
+
+Story
+
+.env = secret locker.
+
+The application knows the name:
+
+process.env.DB_CONNECT
+
+The locker contains the actual value.
+
+Remember
+
+Code knows the name; .env stores the value.
+
+Never put passwords/API secrets directly into source code.
+
+8. MongoDB
+
+Story
+
+MongoDB = company's records room/database.
+
+It stores things such as:
+
+Users
+Drivers
+Rides
+Ride history
+Ratings
+
+9. Mongoose
+
+Code
+
+const mongoose = require('mongoose');
+
+Meaning
+
+Mongoose helps Node.js communicate with MongoDB in a structured way.
+
+Story
+
+MongoDB = records warehouse
+Mongoose = warehouse manager
+
+10. Database connection — db/db.js
+
+Code
+
+const mongoose = require('mongoose');
+
+function connectToDb() {
+
+    mongoose.connect(process.env.DB_CONNECT).then(() => {
+
+        console.log("Connected to db");
+
+    }).catch((err) => {
+
+        console.log(err);
+
+    });
+
+}
+
+module.exports = connectToDb;
+
+Understand the code
+
+mongoose.connect(process.env.DB_CONNECT)
+
+Start the connection to MongoDB using the database URL from .env.
+
+.then(() => {
+    console.log("Connected to db");
+})
+
+Run this after successful connection.
+
+.catch((err) => {
+    console.log(err);
+})
+
+Run this if connection fails.
+
+module.exports = connectToDb;
+
+Make the connection function available to another file.
+
+Story
+
+connectToDb()
+      ↓
+Call the records room
+      ↓
+ ┌───────────────┐
+ ↓               ↓
+Success         Failure
+ ↓               ↓
+.then()         .catch()
+
+Important JavaScript lesson
+
+Wrong:
+
+.then(console.log("Connected"))
+
+Why?
+
+Because console.log() executes immediately.
+
+Correct:
+
+.then(() => {
+    console.log("Connected");
+})
+
+Because .then() receives the instruction/function to execute later.
+
+11. Connecting the database to the application
+
+Once connectToDb has been created and exported, another file can use it.
+
+Code
+
+const connectToDb = require('./db/db');
+
+connectToDb();
+
+Story
+
+db.js says:
+
+"Here is my database-connection procedure."
+
+The other file says:
+
+"Okay, execute that procedure now."
+
+Important
+
+Don't do this:
+
+const mongoose = require('./db/db');
+mongoose();
+
+Even though a variable technically can be named differently, it is confusing.
+
+Prefer:
+
+const connectToDb = require('./db/db');
+connectToDb();
+
+because the name tells you what the function actually does.
+
+12. Current architecture
+
+At this point I understand:
+
+                 USER
+                   ↓
+               PORT 3000
+                   ↓
+              HTTP SERVER
+               server.js
+                   ↓
+              EXPRESS APP
+                 app.js
+                   ↓
+              MIDDLEWARE
+                   ↓
+                ROUTE
+                   ↓
+              APPLICATION
+                 LOGIC
+                   ↓
+               MONGOOSE
+                   ↓
+               MONGODB
+
+Database connection:
+
+app/server
+     ↓
+connectToDb()
+     ↓
+mongoose.connect()
+     ↓
+process.env.DB_CONNECT
+     ↓
+MongoDB
+
+13. Code I should be able to recreate
+
+Don't try to memorize every character.
+
+I should be able to recreate these ideas:
+
+Start Express
+
+const express = require('express');
+const app = express();
+
+Create a route
+
+app.get("/", (req, res) => {
+    res.send("...");
+});
+
+Export
+
+module.exports = app;
+
+Import
+
+const app = require('./app');
+
+Read environment variable
+
+process.env.PORT
+process.env.DB_CONNECT
+
+Connect MongoDB
+
+mongoose.connect(process.env.DB_CONNECT)
+
+Handle success/failure
+
+.then(() => {
+    // success
+})
+.catch((err) => {
+    // failure
+})
+
+Export database function
+
+module.exports = connectToDb;
+
+14. How to write every future concept
+
+For every new thing from the tutorial, use this exact format:
+
+Concept: __________
+
+Story
+
+Think of it as __________.
+
+Why do we need it?
+
+Without it, __________.
+
+Code
+
+// important code
+
+Line-by-line meaning
+
+line 1 → ...
+line 2 → ...
+line 3 → ...
+
+How it connects to my project
+
+Previous thing
+      ↓
+New thing
+      ↓
+Next thing
+
+What I need to remember
+
+One or two sentences in my own words.
+
+Can I recreate it?
+
+☐ Yes
+☐ Not yet
+
+15. Most important rule for these notes
+
+Don't write:
+
+"Mongoose is an ODM for MongoDB..."
+
+and then move on.
+
+Write:
+
+MongoDB = records room. Mongoose = manager that helps my Node application work with that room.
+
+Then underneath it:
+
+const mongoose = require('mongoose');
+
+This gives you:
+
+memory + understanding + syntax.
+
+That combination is what will let you eventually write the project without the tutorial.
+
+16. User Model — models/user.model.js
+
+The User model answers two questions:
+
+What does a User look like?
+
+and
+
+What can a User/User model do?
+
+Code
+
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const userSchema = new mongoose.Schema({
+    fullname: {
+        firstname: {
+            type: String,
+            required: true,
+            minlength: [3, "The firstname should be more than 3 characters"]
+        },
+        lastname: {
+            type: String,
+            minlength: [3, "The lastname should be more than 3 characters"]
+        },
+    },
+
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        minlength: [5, "the email should be more than 5 characters"],
+    },
+
+    password: {
+        type: String,
+        required: true,
+        select: false,
+    },
+
+    socketId: {
+        type: String,
+    },
+});
+
+userSchema.methods.generateAuthToken = function() {
+    const token = jwt.sign(
+        { _id: this._id },
+        process.env.JWT_SECRET
+    );
+
+    return token;
+};
+
+userSchema.methods.comparePassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
+};
+
+userSchema.statics.hashPassword = async function(password) {
+    return await bcrypt.hash(password, 10);
+};
+
+const userModel = mongoose.model('user', userSchema);
+
+module.exports = userModel;
+
+Story
+
+MongoDB is the records room.
+
+userSchema is the User registration form/blueprint.
+
+User
+├── fullname
+│   ├── firstname
+│   └── lastname
+├── email
+├── password
+└── socketId
+
+Then I give an individual User some abilities:
+
+User can:
+→ generate an authentication token
+→ compare a password
+
+Then I give the User model/system an ability:
+
+User model can:
+→ hash a new password
+
+Finally, I create the actual model and export it.
+
+Memory line
+
+Schema = blueprint
+
+Methods = what one User can do
+
+Statics = what the User model can do
+
+Model = tool used to work with User records
+
+17. Mongoose Schema fields
+
+type
+
+type: String
+
+Means the value should be a string/text.
+
+required
+
+required: true
+
+Means the field must be provided.
+
+minlength
+
+minlength: [3, "message"]
+
+Checks the minimum string length and gives a custom message if it fails.
+
+unique
+
+unique: true
+
+Used to create a uniqueness constraint/index for values such as email.
+
+select: false
+
+select: false
+
+The password field is not returned by default when selecting a user.
+
+Story
+
+Think of a registration form:
+
+First Name ★
+Email ★
+Password 🔒
+
+★ = required
+
+minimum length = form rule
+
+unique email = no duplicate registration
+
+🔒 = password should not normally be exposed
+
+Important password point
+
+select: false does not hash the password.
+
+Password hashing is a separate step using bcrypt.
+
+18. methods vs statics
+
+This is one of the most important concepts.
+
+Methods
+
+userSchema.methods.generateAuthToken = ...
+userSchema.methods.comparePassword = ...
+
+Methods belong to an individual User document.
+
+Example:
+
+user.generateAuthToken();
+user.comparePassword(password);
+
+Statics
+
+userSchema.statics.hashPassword = ...
+
+Statics belong to the User model itself.
+
+Example:
+
+userModel.hashPassword(password);
+
+Story
+
+Imagine a company.
+
+An individual employee can:
+
+"Generate MY ID card."
+
+"Check MY password."
+
+That is a method.
+
+The HR department can:
+
+"Hash the password for a new employee."
+
+That is a static.
+
+Memory
+
+Methods = MY ability
+
+Statics = COMPANY/User-model ability
+
+19. this
+
+Inside:
+
+userSchema.methods.comparePassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
+}
+
+this means the current User document on which the method is being called.
+
+Example:
+
+user1.comparePassword(password)
+
+Inside that method:
+
+this
+
+means user1.
+
+If:
+
+user2.comparePassword(password)
+
+then this means user2.
+
+Story
+
+1,000 employees work in the company.
+
+You say:
+
+"Generate MY ID card."
+
+this means:
+
+the person currently speaking.
+
+Memory
+
+this = the current object/document I'm working with.
+
+20. bcrypt
+
+const bcrypt = require('bcrypt');
+
+bcrypt is used for password security.
+
+Registration
+
+Plain password
+      ↓
+bcrypt.hash(password, 10)
+      ↓
+Hash
+      ↓
+Database
+
+Login
+
+Entered password
+      ↓
+bcrypt.compare()
+      ↓
+Stored password hash
+      ↓
+true / false
+
+Story
+
+The company never wants to write the employee's real password in the records room.
+
+Instead, the password goes through a security machine and becomes a hash.
+
+Later, the security guard checks whether the entered password matches the stored security pattern.
+
+Important
+
+bcrypt.hash(password, 10)
+
+10 is the bcrypt cost/salt-round setting used by this code.
+
+21. JWT
+
+const jwt = require('jsonwebtoken');
+
+JWT is used for authentication.
+
+const token = jwt.sign(
+    { _id: this._id },
+    process.env.JWT_SECRET
+);
+
+Break it down
+
+{ _id: this._id }
+
+Data placed inside the token.
+
+It identifies the current user.
+
+process.env.JWT_SECRET
+
+Secret key used to sign the token.
+
+jwt.sign(...)
+
+Creates a signed JWT.
+
+Story
+
+JWT is like a company ID card.
+
+User ID
+   +
+Company secret stamp
+   ↓
+JWT
+
+Later, the server can verify the signed token and identify the user.
+
+Memory line
+
+JWT = signed identity card
+
+_id = who the user is
+
+secret = company's stamp
+
+22. mongoose.model()
+
+const userModel = mongoose.model('user', userSchema);
+
+Meaning
+
+Create a Mongoose model called user using the actual userSchema blueprint.
+
+Important
+
+'user'       → string/name
+userSchema   → actual variable containing the schema
+
+Wrong:
+
+mongoose.model('user', 'userSchema');
+
+because 'userSchema' is only text.
+
+Correct:
+
+mongoose.model('user', userSchema);
+
+Memory
+
+Quotes = text
+
+No quotes = variable/value
+
+23. User routes — routes/user.routes.js
+
+Code
+
+const express = require('express');
+const router = express.Router();
+const { body } = require('express-validator');
+const userController = require('../controllers/user.controller');
+
+router.post('/register', [
+    body('email')
+        .isEmail()
+        .withMessage('invalid email'),
+
+    body('fullname.firstname')
+        .isLength({ min: 3 })
+        .withMessage('the first name must be greater than 3'),
+
+    body('password')
+        .isLength({ min: 6 })
+        .withMessage('password must at least 6 characters')
+    ],
+    userController.registerUser
+);
+
+module.exports = router;
+
+24. What is a Router?
+
+const router = express.Router();
+
+A router groups related routes.
+
+Story
+
+The whole Express app is the large Uber office.
+
+The router is the User department's route directory.
+
+Main Office
+│
+├── User routes
+│   ├── /register
+│   └── /login
+│
+├── Captain routes
+│   ├── /register
+│   └── /login
+│
+└── Ride routes
+    ├── /create
+    └── /accept
+
+Memory
+
+app = whole office
+
+router = route system for one department
+
+25. Registration route
+
+router.post('/register', [
+    ...
+],
+userController.registerUser
+);
+
+Meaning
+
+When a POST request reaches /register:
+
+POST /register
+      ↓
+Validation middleware
+      ↓
+userController.registerUser
+
+Story
+
+Customer says:
+
+"I want to register."
+
+Reception says:
+
+"Registration requests go here."
+
+The checking desk checks the form first.
+
+Then the registration employee handles it.
+
+Memory
+
+POST is commonly used for sending/creating data.
+
+26. express-validator
+
+const { body } = require('express-validator');
+
+Used to validate incoming request data.
+
+Story
+
+The user arrives with a registration form.
+
+A checking desk verifies the form before it is processed.
+
+Request
+   ↓
+Validation Desk
+   ↓
+Controller
+
+Validation is another form of middleware.
+
+27. body('email')
+
+body('email')
+
+Looks at the email field inside the request body.
+
+Example:
+
+{
+    "email": "abc@gmail.com"
+}
+
+Story
+
+The checking desk opens the registration form and looks at the Email box.
+
+28. body('fullname.firstname')
+
+body('fullname.firstname')
+
+Accesses a nested property.
+
+For:
+
+{
+    "fullname": {
+        "firstname": "Suvasis",
+        "lastname": "Das"
+    }
+}
+
+it means:
+
+fullname
+   ↓
+firstname
+
+Memory
+
+Dot notation lets me reach inside nested objects.
+
+This should match the data structure expected by the schema.
+
+29. Validation methods
+
+Email
+
+body('email')
+    .isEmail()
+    .withMessage('invalid email')
+
+Checks email format.
+
+First name
+
+body('fullname.firstname')
+    .isLength({ min: 3 })
+
+Checks minimum length.
+
+Password
+
+body('password')
+    .isLength({ min: 6 })
+
+Checks minimum password length.
+
+withMessage()
+
+Defines the error message for the failed validation rule.
+
+Memory
+
+Rule = what to check
+
+withMessage() = what to say when it fails
+
+30. Controller — controllers/user.controller.js
+
+Current code
+
+const userModel = require("../models/user.model");
+
+module.exports.registerUser = async (req, res, next) => {
+
+}
+
+What is a Controller?
+
+The controller receives the request and coordinates what should happen next.
+
+Story
+
+The controller is the receptionist.
+
+Customer:
+
+"I want to register."
+
+Controller:
+
+"Okay, I'll coordinate the registration process."
+
+The controller should not contain every piece of business logic.
+
+Usually:
+
+Route
+  ↓
+Controller
+  ↓
+Service
+
+31. req, res, next in a controller
+
+async (req, res, next) => {
+}
+
+req
+
+Incoming request information.
+
+For registration, data will generally be in:
+
+req.body
+
+res
+
+Used to send a response back to the client.
+
+next
+
+Passes control onward, commonly to another middleware or error-handling flow.
+
+Story
+
+req = customer's filled form
+
+res = office's answer
+
+next = send the process to the next desk
+
+32. Service — services/user.service.js
+
+Code
+
+const userModel = require('../models/user.model');
+
+module.exports.createUser = async ({
+    firstname,
+    lastname,
+    password,
+    email
+}) => {
+    if (!firstname || !password || !email) {
+        throw new Error('all fields are required');
+    }
+
+    const user = userModel.create({
+        fullname: {
+            firstname,
+            lastname
+        },
+        email,
+        password
+    });
+
+    return user;
+}
+
+What is a Service?
+
+A service contains the business logic.
+
+Story
+
+Controller = receptionist.
+
+Service = specialist who performs the actual registration work.
+
+Customer
+   ↓
+Receptionist (Controller)
+   ↓
+Registration specialist (Service)
+   ↓
+User Model
+   ↓
+Database
+
+Memory
+
+Controller = handles/coordinates the request
+
+Service = performs business work
+
+33. Destructuring
+
+module.exports.createUser = async ({
+    firstname,
+    lastname,
+    password,
+    email
+}) => {
+
+The function receives an object and directly takes out the required properties.
+
+Conceptually similar to:
+
+const firstname = data.firstname;
+const lastname = data.lastname;
+const password = data.password;
+const email = data.email;
+
+Story
+
+The registration specialist receives one complete form but takes out only the fields needed for the job.
+
+34. Required-field check
+
+if (!firstname || !password || !email) {
+    throw new Error('all fields are required');
+}
+
+If a required value is missing, stop and raise an error.
+
+Story
+
+The registration employee checks the form:
+
+No email? Stop.
+
+No password? Stop.
+
+No first name? Stop.
+
+Memory
+
+throw = raise an error and stop normal execution.
+
+35. userModel.create()
+
+const user = userModel.create({
+    fullname: {
+        firstname,
+        lastname
+    },
+    email,
+    password
+});
+
+Asks the User model to create a database record.
+
+Story
+
+The registration specialist finishes the form and sends it to the records department.
+
+Service
+   ↓
+User Model
+   ↓
+Mongoose
+   ↓
+MongoDB
+
+36. Async database operations
+
+userModel.create() is asynchronous.
+
+So the important idea is:
+
+const user = await userModel.create({
+    ...
+});
+
+when I need to wait for the creation operation to finish before continuing.
+
+Story
+
+The records department is still writing the user file.
+
+await means:
+
+"Wait for this operation to finish before continuing this part of the function."
+
+37. Password security in registration
+
+The plain password should not be stored directly.
+
+The intended security flow is:
+
+User enters password
+        ↓
+bcrypt.hash()
+        ↓
+Hashed password
+        ↓
+MongoDB
+
+Remember:
+
+select: false
+
+only hides the password field from normal queries.
+
+It does not hash the password.
+
+Hashing is a separate step.
+
+38. Current registration architecture
+
+                    USER
+                      │
+                      │ POST /register
+                      ↓
+               USER ROUTE
+             user.routes.js
+                      │
+                      ↓
+               VALIDATION
+            express-validator
+                      │
+                      ↓
+                CONTROLLER
+            user.controller.js
+                      │
+                      ↓
+                 SERVICE
+             user.service.js
+                      │
+                      ↓
+                 USER MODEL
+              user.model.js
+                      │
+                      ↓
+                MONGOOSE
+                      │
+                      ↓
+                 MONGODB
+
+Story
+
+Customer asks to register → route sends the request to registration → validation desk checks the form → controller receives and coordinates the request → service performs business logic → model handles the user record → MongoDB stores it.
+
+39. Complete project story so far
+
+                    👤 USER
+                       │
+                       │ Request
+                       ↓
+                  🚪 PORT
+                       │
+                       ↓
+                 🌐 SERVER
+                  server.js
+                       │
+                       ↓
+                🏢 EXPRESS
+                   app.js
+                       │
+                       ↓
+                🛡️ MIDDLEWARE
+                       │
+                       ↓
+                  🛣️ ROUTE
+                       │
+                       ↓
+                👨‍💼 CONTROLLER
+                       │
+                       ↓
+                🧑‍🔧 SERVICE
+                       │
+                       ↓
+                 👤 USER MODEL
+                       │
+                       ↓
+                 📐 SCHEMA
+                       │
+                       ↓
+                  📦 MONGOOSE
+                       │
+                       ↓
+                 🗄️ MONGODB
+
+Authentication story:
+
+Registration:
+Plain password
+      ↓
+bcrypt.hash()
+      ↓
+Hash
+      ↓
+Database
+
+Login:
+Entered password
+      ↓
+bcrypt.compare()
+      ↓
+Correct?
+   ↓       ↓
+ YES       NO
+ ↓         ↓
+JWT       Reject
+ ↓
+Token
+
+40. Updated one-line revision sheet
+
+Express          → helps build the application
+app              → Express application
+server           → HTTP server that listens for traffic
+port             → network gate/entry point
+dotenv           → loads .env values
+.env             → secret/config locker
+process.env      → access to environment variables
+middleware       → request checkpoint/processing layer
+router           → groups related routes
+route            → decides where a request goes
+req              → incoming request
+res              → outgoing response
+next             → pass control onward
+MongoDB          → database/storage
+Mongoose         → helper/manager for MongoDB
+Schema           → blueprint of a document
+Model            → tool/interface for working with records
+methods          → abilities of an individual document
+statics          → abilities of the model
+this             → current object/document
+bcrypt.hash()    → create password hash
+bcrypt.compare() → compare entered password with stored hash
+JWT              → signed authentication token
+validator        → checks incoming data
+body('x.y')      → access nested request-body data
+isEmail()        → email validation
+isLength()       → length validation
+withMessage()    → validation failure message
+Controller       → handles/coordinates request
+Service          → business logic
+throw            → raise an error
+create()         → create a database record
+await            → wait for an async operation
+
+41. What I should be able to recreate without looking
+
+I should be able to write the basic flow from memory:
+
+Imports
+   ↓
+Schema
+   ↓
+Methods
+   ↓
+Statics
+   ↓
+Model
+   ↓
+Export
+
+For registration:
+
+POST route
+   ↓
+Validation
+   ↓
+Controller
+   ↓
+Service
+   ↓
+Model
+   ↓
+Database
+
+For authentication:
+
+Password
+   ↓
+bcrypt
+   ↓
+JWT
+
+42. New concepts I should test myself on
+
+What is the difference between a schema and a model?
+
+What is the difference between a method and a static?
+
+What does this mean inside comparePassword()?
+
+Why do we hash passwords?
+
+Why does select: false not replace password hashing?
+
+What does jwt.sign() do?
+
+What are the two important arguments to jwt.sign() here?
+
+Why is userSchema passed without quotes to mongoose.model()?
+
+What is a router?
+
+Why validate a request before the controller?
+
+What is the difference between a controller and a service?
+
+Why is userModel.create() asynchronous?
+
+What does throw new Error() do?
+
+Why does body('fullname.firstname') use a dot?
+
+What is the full route → controller → service → model → database flow?
+
+Golden Story
+
+My computer is a building. A port is its gate. The HTTP server opens the gate. Express manages the office. Middleware acts as checkpoints. Routes decide where requests go. Controllers are receptionists who handle requests. Services are specialists who perform business logic. Models are database workers. Schemas are their blueprints. Mongoose is the manager who communicates with MongoDB. MongoDB is the records room. .env is the secret locker. bcrypt protects passwords, and JWT acts like a signed ID card for authentication.
+
+The goal is not to memorize isolated code.
+
+The goal is to be able to tell the whole story of a request from the user to the database and back.

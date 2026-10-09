@@ -1,0 +1,1414 @@
+Uber Clone — Backend Notes (Part 1)
+
+1. Big Picture — What am I building?
+
+My backend is like an Uber office.
+
+User
+  ↓
+Port
+  ↓
+HTTP Server
+  ↓
+Express App
+  ↓
+Middleware
+  ↓
+Route
+  ↓
+Controller
+  ↓
+Database
+
+Real-world story
+
+Computer = Building
+
+Port = Gate
+
+Server = Entrance/reception system
+
+Express App = Office management system
+
+Middleware = Checkpoints/security/processors
+
+Route = Tells the request which department to go to
+
+Controller = Employee who actually handles the job
+
+Database = Records room
+
+2. app.js vs server.js
+
+app.js
+
+app.js is where I prepare/configure my application.
+
+I decide:
+
+What middleware I use
+
+What routes exist
+
+How requests should be handled
+
+server.js
+
+server.js is where I start/open the server.
+
+It:
+
+Creates the HTTP server
+
+Chooses the port
+
+Starts listening
+
+Memory line
+
+app.js = PREPARE
+server.js = START
+
+3. Express
+
+const express = require('express');
+const app = express();
+
+What is Express?
+
+Express is a Node.js framework that makes it easier to build web servers and APIs.
+
+Story
+
+Node.js gives me the building.
+
+Express gives me the office system inside the building.
+
+Important
+
+express
+
+= framework/function
+
+app
+
+= my actual Express application
+
+4. Port
+
+Example:
+
+const port = process.env.PORT || 3000;
+
+Story
+
+My computer is a huge building.
+
+A port is like a gate.
+
+localhost:3000
+         ↑
+      Gate 3000
+
+The server listens through that gate.
+
+Memory line
+
+Port = entry point/gate for network traffic to a service.
+
+3000 is the port number.
+
+5. server.listen()
+
+server.listen(port, () => {
+    console.log(`server is running on the port ${port}`);
+});
+
+Meaning
+
+Start the server and make it listen on this port.
+
+Story
+
+The office has been prepared.
+
+Now the manager says:
+
+"Open Gate 3000. The office is now open."
+
+6. HTTP Server
+
+const http = require('http');
+
+const server = http.createServer(app);
+
+Meaning
+
+Node's HTTP module creates the actual server.
+
+HTTP Server
+    ↓
+Express App
+
+Story
+
+HTTP Server = building entrance/reception system
+
+Express App = office operating inside it
+
+Memory line
+
+Server receives the network traffic; Express decides how the application handles it.
+
+7. Environment Variables — .env
+
+Example:
+
+PORT=3000
+DB_CONNECT=your_mongodb_connection_string
+
+Why use .env?
+
+For values that may change or should not be written directly in the code.
+
+Examples:
+
+Database URL
+
+Passwords
+
+Secret keys
+
+API keys
+
+Port
+
+Story
+
+.env = secret locker
+
+My application knows the name of something:
+
+process.env.DB_CONNECT
+
+and gets its value from the locker.
+
+Memory line
+
+Code knows the NAME; .env stores the VALUE.
+
+8. dotenv
+
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+What does it do?
+
+It reads the .env file and makes those values available through:
+
+process.env
+
+Story
+
+.env = locker
+dotenv = employee who opens the locker and brings the information into the office
+
+9. process.env
+
+process.env.PORT
+process.env.DB_CONNECT
+
+process.env contains environment variables.
+
+Important difference
+
+process.env(DB_CONNECT)     ❌
+process.env.DB_CONNECT      ✅
+
+Why?
+
+Because process.env is treated like an object containing named values, not like a function.
+
+Story
+
+process.env = locker
+DB_CONNECT = one item inside the locker
+
+10. Middleware
+
+Example:
+
+app.use(cors());
+
+What is middleware?
+
+Middleware is code that a request passes through before reaching the final route/handler.
+
+Request
+   ↓
+Middleware
+   ↓
+Route
+   ↓
+Response
+
+Story
+
+A person enters an office:
+
+Visitor
+  ↓
+Security
+  ↓
+Reception
+  ↓
+Department
+
+Security is one kind of middleware.
+
+But middleware is NOT only authentication.
+
+It can:
+
+Check authentication
+
+Validate data
+
+Handle CORS
+
+Log requests
+
+Modify request/response
+
+Perform other processing
+
+Memory line
+
+Middleware = checkpoint/processing step in the request journey.
+
+11. CORS
+
+const cors = require('cors');
+
+app.use(cors());
+
+What is CORS?
+
+CORS helps control whether a frontend from another origin can communicate with the backend.
+
+Example:
+
+Frontend → localhost:5173
+Backend  → localhost:3000
+
+These are different origins.
+
+Story
+
+Frontend is in Building A.
+
+Backend is in Building B.
+
+CORS is part of the permission system that allows communication between them.
+
+12. Route
+
+Example:
+
+app.get("/", (req, res) => {
+    res.send("server is running");
+});
+
+This creates a route.
+
+Meaning
+
+When someone sends a GET request to /, run this function.
+
+Break it down:
+
+app.get
+   ↓
+GET request
+
+"/"
+   ↓
+root path
+
+(req, res)
+   ↓
+request + response
+
+res.send(...)
+   ↓
+send answer back
+
+13. Request and Response
+
+(req, res)
+
+req
+
+Request = information coming IN to the server.
+
+It may contain:
+
+URL
+
+method
+
+headers
+
+parameters
+
+body
+
+res
+
+Response = information going OUT from the server.
+
+Example:
+
+res.send("server is running");
+
+Memory trick
+
+REQ = IN
+RES = OUT
+
+Story
+
+Customer asks:
+
+"Is the server working?"
+
+That's the request.
+
+Server replies:
+
+"Yes."
+
+That's the response.
+
+14. module.exports and require
+
+In app.js:
+
+module.exports = app;
+
+In another file:
+
+const app = require('./app');
+
+Meaning
+
+module.exports = make something available to another file.
+
+require() = bring that exported thing into this file.
+
+Story
+
+app.js says:
+
+"Here is my completed office."
+
+server.js says:
+
+"I'll take it and use it."
+
+Memory line
+
+Export = give it out
+Require = bring it in
+
+15. MongoDB
+
+MongoDB is where I store application data.
+
+For Uber, examples include:
+
+Users
+
+Drivers
+
+Rides
+
+Ride history
+
+Ratings
+
+Other application data
+
+Story
+
+MongoDB = company records room
+
+The server handles requests, while the database stores information permanently.
+
+Server
+   ↓
+Database
+
+16. Mongoose
+
+const mongoose = require('mongoose');
+
+What is Mongoose?
+
+Mongoose is a library that helps my Node.js application work with MongoDB in a structured way.
+
+Story
+
+MongoDB = huge records warehouse
+
+Mongoose = warehouse manager
+
+It helps the application communicate with the database and later lets us define structures/models and perform database operations.
+
+Memory line
+
+MongoDB = storage
+Mongoose = helper/manager for working with MongoDB
+
+17. Database Connection Function
+
+function connectToDb() {
+    mongoose.connect(process.env.DB_CONNECT)
+}
+
+Why make a function?
+
+Because I want one reusable operation:
+
+"Connect my application to the database."
+
+Then another file can call:
+
+connectToDb();
+
+Story
+
+I create one procedure for:
+
+"Call the database records room."
+
+I can then use that procedure whenever the application starts.
+
+18. mongoose.connect()
+
+mongoose.connect(process.env.DB_CONNECT)
+
+Meaning
+
+Tell Mongoose:
+
+"Connect my application to MongoDB using the connection information stored in DB_CONNECT."
+
+Flow:
+
+.env
+ ↓
+DB_CONNECT
+ ↓
+process.env.DB_CONNECT
+ ↓
+mongoose.connect()
+ ↓
+MongoDB
+
+19. Promise — .then() and .catch()
+
+Database connection takes time.
+
+So we handle the result asynchronously.
+
+mongoose.connect(...)
+    .then(() => {
+        console.log("Connected to DB");
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+
+Story
+
+I call the database office.
+
+Then I wait for their answer.
+
+There are two possible results:
+
+Database connection
+       ↓
+    ┌───────┐
+    ↓       ↓
+ SUCCESS   FAILURE
+    ↓       ↓
+ .then()  .catch()
+
+.then()
+
+What to do when the operation succeeds.
+
+.catch()
+
+What to do when the operation fails.
+
+Very important
+
+Don't do this:
+
+.then(console.log("Connected"))
+
+because that executes console.log() immediately.
+
+Do this:
+
+.then(() => {
+    console.log("Connected");
+})
+
+because .then() needs the instruction/function to execute later.
+
+Memory line
+
+.then() = success
+.catch() = failure
+
+20. Current db.js
+
+const mongoose = require('mongoose');
+
+function connectToDb() {
+
+    mongoose.connect(process.env.DB_CONNECT).then(() => {
+
+        console.log("Connected to db");
+
+    }).catch((err) => {
+
+        console.log(err);
+
+    });
+
+}
+
+module.exports = connectToDb;
+
+What this whole file says in English
+
+"Load Mongoose. Create a reusable function called connectToDb. When the function runs, connect to MongoDB using the database URL from the environment variables. If successful, print a success message. If there is an error, print the error. Finally, make this function available to other files."
+
+21. Current overall project story
+
+                  👤 USER
+                     │
+                     │ Request
+                     ↓
+               🚪 PORT 3000
+                     │
+                     ↓
+              🌐 HTTP SERVER
+                server.js
+                     │
+                     ↓
+              🏢 EXPRESS APP
+                 app.js
+                     │
+                     ↓
+               🛡️ MIDDLEWARE
+                     │
+                     ↓
+                 📋 ROUTE
+                     │
+                     ↓
+                👨‍💻 LOGIC
+                     │
+                     ↓
+               📦 MONGOOSE
+                     │
+                     ↓
+                🗄️ MONGODB
+
+The database connection itself is:
+
+app/server
+    ↓
+connectToDb()
+    ↓
+mongoose
+    ↓
+process.env.DB_CONNECT
+    ↓
+MongoDB
+
+22. Things I should be able to explain without looking
+
+Before moving further in the tutorial, I should be able to answer:
+
+Why are app.js and server.js separate?
+
+What is the difference between app and server?
+
+What is a port?
+
+What is middleware?
+
+What are req and res?
+
+What does module.exports do?
+
+What does require() do?
+
+What is .env?
+
+What does process.env.DB_CONNECT mean?
+
+What is Mongoose?
+
+What does mongoose.connect() do?
+
+Why do we use .then() and .catch()?
+
+Why does .then() receive a function?
+
+23. One-line revision sheet
+
+Express       → helps build the application/server
+app            → Express application
+server         → HTTP server that listens for traffic
+port           → gate/entry point
+dotenv         → loads .env values
+.env           → secret/config locker
+process.env    → access to environment variables
+middleware     → request checkpoint/processing layer
+route          → tells what to do for a particular request
+req            → incoming request
+res            → outgoing response
+MongoDB        → database/storage
+Mongoose       → helper for working with MongoDB
+connectToDb()  → reusable database connection function
+.then()        → success
+.catch()       → failure
+export         → make available
+require        → bring into another file
+
+Golden Story
+
+My computer is a building. A port is its gate. The HTTP server opens the gate. Express manages the office. Middleware acts as checkpoints. Routes decide where requests go. Controllers do the actual work. MongoDB is the records room. Mongoose is the manager who communicates with that room. .env is the secret locker.
+
+This is the main story I should keep in my head instead of memorizing isolated lines of code.
+
+24. Backend Architecture — Route → Controller → Service → Model
+
+As the project grows, I should NOT put everything in one file.
+
+The work is divided into layers:
+
+Request
+   ↓
+Route
+   ↓
+Validation
+   ↓
+Controller
+   ↓
+Service
+   ↓
+Model
+   ↓
+Database
+
+Real-world story
+
+Think of an Uber company.
+
+Route = receptionist/signboard that sends the visitor to the correct department
+
+Validation = checking desk that checks whether the form is valid
+
+Controller = receptionist who receives the request and coordinates the work
+
+Service = specialist who performs the actual business logic
+
+Model = database worker/interface that works with stored records
+
+Database = records room
+
+Memory line
+
+Route decides WHERE → Controller handles the request → Service does the WORK → Model talks to the database.
+
+25. routes/user.routes.js
+
+Code
+
+const express = require('express');
+const router = express.Router();
+const { body } = require('express-validator');
+const userController = require('../controllers/user.controller');
+
+router.post('/register', [
+    body('email')
+        .isEmail()
+        .withMessage('invalid email'),
+
+    body('fullname.firstname')
+        .isLength({ min: 3 })
+        .withMessage('the first name must be greater than 3'),
+
+    body('password')
+        .isLength({ min: 6 })
+        .withMessage('password must at least 6 characters')
+    ],
+    userController.registerUser
+);
+
+module.exports = router;
+
+26. What is router?
+
+const router = express.Router();
+
+A router helps me group related routes.
+
+Story
+
+The whole Express app is a large Uber office.
+
+A router is like a department's route directory.
+
+For example:
+
+Main Office
+│
+├── User routes
+│   ├── /register
+│   └── /login
+│
+├── Captain routes
+│   ├── /register
+│   └── /login
+│
+└── Ride routes
+    ├── /create
+    └── /accept
+
+Memory line
+
+app = whole office
+
+router = route system for one department
+
+27. router.post('/register', ...)
+
+router.post('/register', [
+    ...
+],
+userController.registerUser
+);
+
+Meaning
+
+When a client sends:
+
+POST /register
+
+the request first goes through the validation middleware and then reaches:
+
+userController.registerUser
+
+Story
+
+A customer says:
+
+"I want to register."
+
+The receptionist says:
+
+"Registration requests go to this department."
+
+Then the form is checked before the registration employee handles it.
+
+Memory line
+
+POST = usually send/create data.
+
+28. express-validator
+
+const { body } = require('express-validator');
+
+This is used to validate incoming request data.
+
+Story
+
+Before a registration form enters the office, a checking desk examines it.
+
+Client
+  ↓
+Validation Desk
+  ↓
+Valid?
+  ↓
+Controller
+
+Validation is also part of the request-processing pipeline, so it behaves like middleware.
+
+29. body('email')
+
+body('email')
+
+Means:
+
+Look inside the request body and access the email field.
+
+For example:
+
+{
+    "email": "abc@gmail.com"
+}
+
+Story
+
+The checking desk opens the registration form and looks specifically at the Email box.
+
+30. body('fullname.firstname')
+
+body('fullname.firstname')
+
+This accesses a nested field.
+
+If the request is:
+
+{
+    "fullname": {
+        "firstname": "Suvasis",
+        "lastname": "Das"
+    }
+}
+
+then:
+
+fullname.firstname
+        ↓
+Full Name box → First Name box
+
+Memory line
+
+Dot notation lets me reach inside nested objects.
+
+This should match the structure of my Mongoose schema.
+
+31. .isEmail()
+
+body('email')
+    .isEmail()
+
+Checks whether the email has a valid email format.
+
+Example:
+
+abc@gmail.com   ✅
+hello           ❌
+abc@            ❌
+
+32. .isLength({ min: 3 })
+
+body('fullname.firstname')
+    .isLength({ min: 3 })
+
+Checks minimum length.
+
+Ab      ❌
+Raj     ✅
+Suvasis ✅
+
+33. .withMessage(...)
+
+.withMessage('invalid email')
+
+Specifies the message to show when the validation rule fails.
+
+Story
+
+The checking desk rejects a form and tells the customer:
+
+"Invalid email."
+
+Memory line
+
+Validation rule = what to check
+
+withMessage() = what to say when it fails
+
+34. controllers/user.controller.js
+
+Current code
+
+const userModel = require("../models/user.model");
+
+module.exports.registerUser = async (req, res, next) => {
+
+}
+
+What is a controller?
+
+The controller handles the incoming request and coordinates the next steps.
+
+Story
+
+The controller is like the receptionist.
+
+The customer arrives and says:
+
+"I want to register."
+
+The receptionist:
+
+receives the request
+
+gets the required information
+
+calls the correct service
+
+eventually sends a response
+
+Important
+
+The controller should not contain every piece of business logic.
+
+Instead:
+
+Route
+  ↓
+Controller
+  ↓
+Service
+
+35. req, res, next in the controller
+
+async (req, res, next) => {
+}
+
+req
+
+Contains incoming request information.
+
+For registration, the useful information will usually be in:
+
+req.body
+
+res
+
+Used to send a response back to the client.
+
+next
+
+Used to pass control to the next middleware/error-handling flow when needed.
+
+Story
+
+req = customer's filled form
+
+res = answer from the office
+
+next = "send this person/process to the next desk"
+
+36. services/user.service.js
+
+Current code
+
+const userModel = require('../models/user.model');
+
+module.exports.createUser = async ({
+    firstname,
+    lastname,
+    password,
+    email
+}) => {
+    if (!firstname || !password || !email) {
+        throw new Error('all fields are required');
+    }
+
+    const user = userModel.create({
+        fullname: {
+            firstname,
+            lastname
+        },
+        email,
+        password
+    });
+
+    return user;
+}
+
+37. What is a service?
+
+A service contains business logic.
+
+Story
+
+The controller is the receptionist.
+
+The service is the specialist/employee who actually does the registration work.
+
+Customer:
+
+"I want to register."
+
+Controller:
+
+"Okay. Registration department, handle this."
+
+Service:
+
+"I'll check the required data and create the user."
+
+Memory line
+
+Controller = handles the request
+
+Service = performs the business work
+
+38. Destructuring in the service
+
+module.exports.createUser = async ({
+    firstname,
+    lastname,
+    password,
+    email
+}) => {
+
+The function receives an object and directly takes out the required properties.
+
+It is roughly the same idea as:
+
+const firstname = data.firstname;
+const lastname = data.lastname;
+const password = data.password;
+const email = data.email;
+
+Story
+
+A customer gives one registration form.
+
+Instead of carrying the whole form everywhere, the registration employee takes out:
+
+First name
+Last name
+Email
+Password
+
+and works with those separately.
+
+39. Required-field check in the service
+
+if (!firstname || !password || !email) {
+    throw new Error('all fields are required');
+}
+
+Meaning
+
+If any required value is missing, stop the operation and raise an error.
+
+Story
+
+The registration employee checks the form:
+
+"No email? Stop."
+
+"No password? Stop."
+
+"No first name? Stop."
+
+The user doesn't proceed to the records room.
+
+Important
+
+The route already has validation, but the service can still protect its business logic from bad/missing input.
+
+40. throw new Error(...)
+
+throw new Error('all fields are required');
+
+This creates an error and stops the normal flow of that function.
+
+Story
+
+The specialist puts up a red sign:
+
+❌ Registration cannot continue.
+
+The error can later be handled by the controller/error middleware.
+
+Memory line
+
+throw = stop normal execution and report an error.
+
+41. userModel.create(...)
+
+const user = userModel.create({
+    fullname: {
+        firstname,
+        lastname
+    },
+    email,
+    password
+});
+
+This asks the User model to create a user record.
+
+Story
+
+The registration specialist finishes the form and sends it to the records department.
+
+The model says:
+
+"I'll create this User document in MongoDB."
+
+Flow:
+
+Service
+   ↓
+User Model
+   ↓
+Mongoose
+   ↓
+MongoDB
+
+42. One important asynchronous point
+
+userModel.create() is asynchronous.
+
+So if I need the completed result, I should understand the idea of:
+
+await userModel.create(...)
+
+The tutorial may add await in the next step.
+
+Story
+
+The records department hasn't finished writing the file yet.
+
+await means:
+
+"Wait for this operation to finish before continuing this part of the function."
+
+Do not memorize this as isolated syntax; connect it to the asynchronous story.
+
+43. Current full registration architecture
+
+                    👤 USER
+                       │
+                       │ POST /register
+                       ↓
+              🛣️ USER ROUTE
+            user.routes.js
+                       │
+                       ↓
+              🛡️ VALIDATION
+            express-validator
+                       │
+                       ↓
+              👨‍💼 CONTROLLER
+            user.controller.js
+                       │
+                       ↓
+              🧑‍🔧 SERVICE
+            user.service.js
+                       │
+                       ↓
+               👤 USER MODEL
+             user.model.js
+                       │
+                       ↓
+                  🗄️ MONGODB
+
+Story
+
+Customer asks to register → route sends them to registration → checking desk validates the form → controller receives the request → service performs registration work → model creates the database record → MongoDB stores it.
+
+44. Important connection with the User schema
+
+Earlier I created:
+
+User blueprint
+├── fullname
+│   ├── firstname
+│   └── lastname
+├── email
+├── password
+└── socketId
+
+The service now creates data using the same structure:
+
+{
+    fullname: {
+        firstname,
+        lastname
+    },
+    email,
+    password
+}
+
+This is important.
+
+Memory line
+
+The data coming from the request, the service object, and the Mongoose schema need to agree on the expected structure.
+
+45. Important security point — password
+
+The current service receives:
+
+password
+
+and sends it into:
+
+userModel.create(...)
+
+My User model also contains:
+
+password: {
+    type: String,
+    required: true,
+    select: false
+}
+
+But remember:
+
+select: false hides the password field from normal reads; it does NOT hash the password.
+
+Password hashing must happen through:
+
+userModel.hashPassword(password)
+
+or another hashing step before saving, depending on where the tutorial puts that responsibility.
+
+Registration security story
+
+Plain password
+      ↓
+   bcrypt
+      ↓
+Hashed password
+      ↓
+   MongoDB
+
+Never store the user's plain password.
+
+46. module.exports in each layer
+
+Route
+
+module.exports = router;
+
+Give the router to another file.
+
+Controller
+
+module.exports.registerUser = ...
+
+Give the controller function to the route.
+
+Service
+
+module.exports.createUser = ...
+
+Give the business-logic function to the controller.
+
+Model
+
+module.exports = userModel;
+
+Give the model to the service/controller.
+
+Story
+
+Each department hands its service to the department above it.
+
+Model
+ ↑
+Service
+ ↑
+Controller
+ ↑
+Route
+ ↑
+App
+
+47. Updated one-line revision sheet
+
+Router          → groups related routes
+Route           → decides where a request goes
+POST            → commonly used to send/create data
+Validator       → checks incoming request data
+Controller      → receives/coordinates the request
+Service         → contains business logic
+Model           → works with database records
+Schema          → blueprint for document structure
+req.body        → data sent in the request body
+body('x.y')     → access nested request-body data
+.isEmail()      → email validation
+.isLength()     → length validation
+withMessage()   → validation failure message
+throw           → raise an error and stop normal flow
+
+48. Golden Story — Updated
+
+My computer is a building. A port is its gate. The HTTP server opens the gate. Express manages the office. Middleware acts as checkpoints. Routes decide where requests go. Controllers are receptionists who handle requests. Services are specialists who perform business logic. Models are database workers that use schemas (blueprints) to work with records. MongoDB is the records room. Mongoose is the manager who communicates with that room. .env is the secret locker.
+
+This is the main story I should keep in my head instead of memorizing isolated lines of code.
+
+49. Things I should now be able to explain without looking
+
+Why are app.js and server.js separate?
+
+What is the difference between app and server?
+
+What is a port?
+
+What is middleware?
+
+What are req and res?
+
+What does module.exports do?
+
+What does require() do?
+
+What is .env?
+
+What does process.env.DB_CONNECT mean?
+
+What is Mongoose?
+
+What does mongoose.connect() do?
+
+Why do we use .then() and .catch()?
+
+Why does .then() receive a function?
+
+What is a schema?
+
+What is a model?
+
+What is the difference between methods and statics?
+
+What does this mean inside a model method?
+
+What does bcrypt do?
+
+What does JWT do?
+
+What is a router?
+
+What is route-level validation?
+
+What is the difference between a controller and a service?
+
+What does body('fullname.firstname') mean?
+
+What does throw new Error() do?
+
+Why is userModel.create() asynchronous?
